@@ -113,17 +113,32 @@ EventSchema.pre('save', function (next) {
       .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
   }
 
-  // Normalize date to ISO format if modified
+  // Normalize date to YYYY-MM-DD format if modified (timezone-safe)
   if (this.isModified('date')) {
-    try {
-      const parsedDate = new Date(this.date);
-      if (isNaN(parsedDate.getTime())) {
-        throw new Error('Invalid date format');
-      }
-      this.date = parsedDate.toISOString().split('T')[0]; // Store as YYYY-MM-DD
-    } catch (error) {
-      return next(new Error('Date must be a valid date string'));
+    // Strict regex for YYYY-MM-DD format
+    const dateRegex = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+    const match = this.date.match(dateRegex);
+    
+    if (!match) {
+      return next(new Error('Date must be in YYYY-MM-DD format'));
     }
+    
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const day = parseInt(match[3], 10);
+    
+    // Validate date is actually valid (e.g., not Feb 30)
+    const testDate = new Date(year, month - 1, day);
+    if (
+      testDate.getFullYear() !== year ||
+      testDate.getMonth() !== month - 1 ||
+      testDate.getDate() !== day
+    ) {
+      return next(new Error('Date must be a valid date'));
+    }
+    
+    // Store normalized YYYY-MM-DD string
+    this.date = `${year}-${match[2]}-${match[3]}`;
   }
 
   // Normalize time to HH:MM format if modified
