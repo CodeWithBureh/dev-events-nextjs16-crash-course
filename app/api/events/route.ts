@@ -5,8 +5,10 @@ import connectDB from "@/lib/mongodb";
 import Event from "@/database/event.model";
 
 // Configure Cloudinary
-console.log('🔧 Configuring Cloudinary...');
-console.log('CLOUDINARY_URL exists:', !!process.env.CLOUDINARY_URL);
+if (process.env.NODE_ENV !== 'production') {
+  console.log('🔧 Configuring Cloudinary...');
+  console.log('CLOUDINARY_URL exists:', !!process.env.CLOUDINARY_URL);
+}
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -14,13 +16,15 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Immediately check what was configured
-const testConfig = cloudinary.config();
-console.log('✅ Cloudinary configured:', {
-  cloud_name: testConfig.cloud_name,
-  api_key: testConfig.api_key,
-  api_secret: testConfig.api_secret ? `${testConfig.api_secret.substring(0, 5)}...` : 'MISSING'
-});
+// Optionally log non-sensitive config details in non-prod only
+if (process.env.NODE_ENV !== 'production') {
+  const testConfig = cloudinary.config();
+  console.log('✅ Cloudinary configured:', {
+    cloud_name: testConfig.cloud_name,
+    api_key: !!testConfig.api_key,
+    api_secret: testConfig.api_secret ? 'set' : 'MISSING',
+  });
+}
 
 export async function POST(req: NextRequest) {
 
