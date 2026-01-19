@@ -45,7 +45,19 @@ const EventDetails = async ( {params} : { params: Promise<{ slug: string }> }) =
 
     const request = await fetch(`${BASE_URL}/api/events/${slug}`);
 
-    const { event } = await request.json();
+    if (!request.ok) {
+        console.error(`Failed to fetch event: ${request.status}`);
+        return notFound();
+    }
+
+    const data = await request.json();
+    const { event } = data;
+
+    if (!event) {
+        console.error('Event not found in response');
+        return notFound();
+    }
+
     const { description, image, overview, date, time, location, mode, agenda, audience, tags, organizer } = event;
 
 
