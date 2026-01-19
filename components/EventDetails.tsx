@@ -58,6 +58,10 @@ const EventDetails = async ( {params} : { params: Promise<string> }) => {
         return notFound();
     }
 
+    console.log('Event data:', event);
+    console.log('Agenda type:', typeof event.agenda, 'Value:', event.agenda);
+    console.log('Tags type:', typeof event.tags, 'Value:', event.tags);
+
     const { description, image, overview, date, time, location, mode, agenda, audience, tags, organizer } = event;
 
 
